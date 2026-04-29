@@ -94,7 +94,7 @@ const data = [
     }
 ];
 
-// Sens du tri (false = descendant au départ)
+// Sens du tri
 let sortAsc = false;
 
 // Bouton de tri
@@ -107,14 +107,20 @@ if (btnSort) {
         sortAsc = !sortAsc;
 
         // On trie une copie du tableau
-        const sorted = [...data].sort((a, b) =>
-            sortAsc ? a.rating - b.rating : b.rating - a.rating
-        );
+        const sorted = [...data].sort((a, b) => {
+            if (sortAsc) {
+                return a.rating - b.rating;
+            } else {
+                return b.rating - a.rating;
+            }
+        });
 
         // On met à jour le texte du bouton
-        btnSort.textContent = sortAsc
-            ? "Trier par note : ascendant ↑"
-            : "Trier par note : descendant ↓";
+        if (sortAsc) {
+            btnSort.textContent = "Trier par note : ascendant";
+        } else {
+            btnSort.textContent = "Trier par note : descendant";
+        }
 
         // On affiche les jeux triés
         afficherJeux(sorted);
