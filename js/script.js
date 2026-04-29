@@ -1,6 +1,6 @@
 "use strict";
 
-// Tableau de données — à générer avec Copilot / une IA
+// Tableau de données
 const data = [
     {
         id: 35,
@@ -94,20 +94,44 @@ const data = [
     }
 ];
 
+// Sens du tri (false = descendant au départ)
+let sortAsc = false;
+
+// Bouton de tri
+const btnSort = document.getElementById("btn-sort");
+
+if (btnSort) {
+    btnSort.addEventListener("click", () => {
+
+        // On inverse le sens du tri
+        sortAsc = !sortAsc;
+
+        // On trie une copie du tableau
+        const sorted = [...data].sort((a, b) =>
+            sortAsc ? a.rating - b.rating : b.rating - a.rating
+        );
+
+        // On met à jour le texte du bouton
+        btnSort.textContent = sortAsc
+            ? "Trier par note : ascendant ↑"
+            : "Trier par note : descendant ↓";
+
+        // On affiche les jeux triés
+        afficherJeux(sorted);
+    });
+}
+
 /**
  * Affiche les jeux dans la page
- * @param {Array} tabJeux - Tableau d'objets jeu à afficher
  */
 function afficherJeux(tabJeux) {
     const container = document.getElementById("list");
 
-    // Vérifie que le conteneur existe
     if (!container) {
         console.error("L'élément #list est introuvable.");
         return;
     }
 
-    // Pattern recommandé : on prépare tout le HTML dans une variable
     let html = "";
 
     tabJeux.forEach(jeu => {
@@ -123,9 +147,8 @@ function afficherJeux(tabJeux) {
         `;
     });
 
-    // Une seule écriture dans le DOM
     container.innerHTML = html;
 }
 
-// Appel au chargement de la page
+// Affichage initial
 afficherJeux(data);
