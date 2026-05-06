@@ -8,14 +8,42 @@
 </head>
 <body>
 <header>
-  <h1>Mon projet</h1>
+  <h1>Les Jeux-Vidéos</h1>
 </header>
 
 <main>
-  <!-- Bouton lié au JavaScript avec l'id btn-sort -->
-  <button id="btn-sort">Trier par note : descendant ↓</button>
+  <form id="form-add">
+    <h2>Ajouter</h2>
 
-  <!-- Liste où les cartes seront affichées par le JavaScript -->
+    <div class="form-group">
+      <label for="input-name">Nom</label>
+      <input type="text" id="input-name" placeholder="Ex : The Witcher 3" required>
+    </div>
+
+    <div class="form-group">
+      <label for="input-category">Catégorie</label>
+      <select id="input-category">
+        <option value="RPG">RPG</option>
+        <option value="Action">Action</option>
+        <option value="Aventure">Aventure</option>
+        <option value="FPS">FPS</option>
+        <option value="RPG">RPG</option>
+        <option value="Stratégie">Stratégie</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="input-rating">Note (1–10)</label>
+      <input type="number" id="input-rating" min="1" max="10" placeholder="8">
+    </div>
+
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Rechercher un jeu...">
+    <button id="btn-sort">Trier par note ↓ (DESC)</button>
+  </div>
   <ul id="list"></ul>
 </main>
 

@@ -1,7 +1,7 @@
 "use strict";
 
-// Tableau de données
-const data = [
+// Tableau de données — à générer avec Copilot / une IA
+let data = [
     {
         id: 35,
         name: "The Witcher 3",
@@ -94,67 +94,104 @@ const data = [
     }
 ];
 
-// Sens du tri
+// Éléments du DOM
+const btnSort = document.getElementById("btn-sort");
+const searchInput = document.getElementById("search");
+const form = document.getElementById("form-add");
+const inputName = document.getElementById("input-name");
+const inputCategory = document.getElementById("input-category");
+const inputRating = document.getElementById("input-rating");
+
+// Sens du tri : false = DESC (notes élevées en premier)
 let sortAsc = false;
 
-// Bouton de tri
-const btnSort = document.getElementById("btn-sort");
+/**
+ * Rafraîchit l'affichage en combinant filtre + tri
+ */
+function refresh() {
+    const query = searchInput.value.toLowerCase();
 
-if (btnSort) {
-    btnSort.addEventListener("click", () => {
+    // 1. Filtrer selon le champ de recherche
+    let result = data.filter(jeu =>
+        jeu.name.toLowerCase().includes(query)
+    );
 
-        // On inverse le sens du tri
-        sortAsc = !sortAsc;
+    // 2. Trier selon l'état du bouton
+    result = [...result].sort((a, b) =>
+        sortAsc ? a.rating - b.rating : b.rating - a.rating
+    );
 
-        // On trie une copie du tableau
-        const sorted = [...data].sort((a, b) => {
-            if (sortAsc) {
-                return a.rating - b.rating;
-            } else {
-                return b.rating - a.rating;
-            }
-        });
-
-        // On met à jour le texte du bouton
-        if (sortAsc) {
-            btnSort.textContent = "Trier par note : ascendant";
-        } else {
-            btnSort.textContent = "Trier par note : descendant";
-        }
-
-        // On affiche les jeux triés
-        afficherJeux(sorted);
-    });
+    // 3. Afficher
+    afficherJeux(result);
 }
+
+// Tri : inverser l'état, mettre à jour le bouton, rafraîchir
+btnSort.addEventListener("click", function () {
+    sortAsc = !sortAsc;
+    btnSort.textContent = sortAsc ? "Trier par note ↑ (ASC)" : "Trier par note ↓ (DESC)";
+    refresh();
+});
+
+// Recherche : à chaque frappe, rafraîchir
+searchInput.addEventListener("input", refresh);
+
+// Formulaire : ajouter un jeu
+form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const nouveauJeu = {
+        id: Date.now(),
+        name: inputName.value.trim(),
+        category: inputCategory.value,
+        rating: Number(inputRating.value),
+        year: new Date().getFullYear(),
+        platform: "PC",
+        image: "https://placehold.co/400x300/7f8c8d/white?text=" +
+            encodeURIComponent(inputName.value.trim())
+    };
+
+    data.push(nouveauJeu);
+    refresh();
+    form.reset();
+});
+
+// Suppression : délégation sur le conteneur #list
+document.getElementById("list").addEventListener("click", function (event) {
+    const btn = event.target.closest(".btn-delete");
+    if (!btn) return;
+
+    const card = btn.closest(".card");
+    const id = Number(card.dataset.id);
+
+    if (!confirm("Supprimer ce jeu ?")) return;
+
+    data = data.filter(jeu => jeu.id !== id);
+    refresh();
+});
 
 /**
  * Affiche les jeux dans la page
+ * @param {Array} tabJeux - Tableau d'objets jeu à afficher
  */
 function afficherJeux(tabJeux) {
-    const container = document.getElementById("list");
-
-    if (!container) {
-        console.error("L'élément #list est introuvable.");
-        return;
-    }
-
+    const ulList = document.getElementById("list");
     let html = "";
 
     tabJeux.forEach(jeu => {
         html += `
-            <article class="card" data-id="${jeu.id}">
-                <img src="${jeu.image}" alt="${jeu.name}">
-                <div class="card-body">
-                    <h2>${jeu.name}</h2>
-                    <p>${jeu.category} — ${jeu.year}</p>
-                    <span class="rating">${jeu.rating}</span>
-                </div>
-            </article>
-        `;
+    <article class="card" data-id="${jeu.id}">
+      <img src="${jeu.image}" alt="${jeu.name}">
+      <div class="card-body">
+        <h2>${jeu.name}</h2>
+        <p>${jeu.category} — ${jeu.year}</p>
+        <span class="rating">${jeu.rating}</span>
+        <button class="btn-delete">Supprimer</button>
+      </div>
+    </article>
+  `;
     });
 
-    container.innerHTML = html;
+    ulList.innerHTML = html;
 }
 
 // Affichage initial
-afficherJeux(data);
