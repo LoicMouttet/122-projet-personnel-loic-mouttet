@@ -1,4 +1,5 @@
 "use strict";
+
 // ===== DONNÉES =====
 // Tableau d'objets : chaque objet = une légende du Barça.
 // Chaque propriété correspond à une donnée affichée sur la carte ou dans la modal.
@@ -192,8 +193,8 @@ const editRating       = document.getElementById("edit-rating");
 const editNationalite  = document.getElementById("edit-nationalite");
 
 // ===== ÉTAT DU TRI =====
-let sortCritere = "rating";
-let sortAsc     = false;
+let sortCritere = "rating"; // "rating" ou "titres"
+let sortAsc     = false;    // false = DESC (plus haut en premier)
 
 // ===== REFRESH =====
 /**
@@ -289,11 +290,13 @@ function afficherJoueurs(tabJoueurs) {
 
 // ===== TRI =====
 
+// Tri par note
 btnSortRating.addEventListener("click", function () {
     if (sortCritere === "rating") {
         // Même critère → on inverse la direction
         sortAsc = !sortAsc;
     } else {
+        // Nouveau critère → on commence en DESC (plus haut d'abord)
         sortCritere = "rating";
         sortAsc     = false;
     }
@@ -301,6 +304,7 @@ btnSortRating.addEventListener("click", function () {
     refresh();
 });
 
+// Tri par nombre de titres
 btnSortTitres.addEventListener("click", function () {
     if (sortCritere === "titres") {
         sortAsc = !sortAsc;
@@ -336,6 +340,8 @@ function mettreAJourBoutonsTri() {
 }
 
 // ===== RECHERCHE EN TEMPS RÉEL =====
+// "input" se déclenche à chaque frappe,
+// contrairement à "change" qui attend la perte du focus.
 searchInput.addEventListener("input", refresh);
 
 // ===== FILTRE PAR POSTE =====
@@ -343,24 +349,30 @@ filterPoste.addEventListener("change", refresh);
 
 // ===== SUPPRESSION PAR DÉLÉGATION =====
 listEl.addEventListener("click", function (event) {
+    // event.target = l'élément exact cliqué
+    // .closest(".btn-delete") = remonte dans les ancêtres jusqu'à trouver .btn-delete
     const btnDelete = event.target.closest(".btn-delete");
     if (!btnDelete) return;
 
+    // On trouve la carte parente pour récupérer l'id
     const card      = btnDelete.closest(".card");
-    const id        = Number(card.dataset.id);
+    const id        = Number(card.dataset.id); // dataset.id = attribut data-id du HTML
     const joueur    = data.find(j => j.id === id);
     const nomJoueur = joueur ? joueur.name : "ce joueur";
 
     if (!confirm(`Supprimer ${nomJoueur} de la liste ?`)) return;
 
+    // On filtre le tableau pour exclure le joueur supprimé
     data = data.filter(j => j.id !== id);
     refresh();
 });
 
 // ===== CLIC SUR UNE CARTE → OUVRIR LA MODAL =====
 listEl.addEventListener("click", function (event) {
+    // On ignore les clics sur le bouton supprimer (déjà géré)
     if (event.target.closest(".btn-delete")) return;
 
+    // On cherche la carte la plus proche du clic
     const card = event.target.closest(".card");
     if (!card) return;
 
@@ -380,7 +392,7 @@ listEl.addEventListener("click", function (event) {
 function ouvrirModal(joueur) {
     document.getElementById("modal-img").src                   = joueur.image;
     document.getElementById("modal-img").alt                   = `Photo de ${joueur.name}`;
-    document.getElementById("modal-img").style.objectPosition = joueur.imgPosition || "top";
+    document.getElementById("modal-img").style.objectPosition  = joueur.imgPosition || "top";
     document.getElementById("modal-poste").textContent         = joueur.poste;
     document.getElementById("modal-name").textContent          = joueur.name;
     document.getElementById("modal-annees").textContent        = `📅 ${joueur.annees}`;
@@ -392,21 +404,28 @@ function ouvrirModal(joueur) {
     // Stocker l'id sur le bouton modifier pour pouvoir le récupérer au clic
     modalBtnEdit.dataset.id = joueur.id;
 
+    // Retirer l'attribut "hidden" pour afficher la modal
     modalOverlay.removeAttribute("hidden");
+    // Mettre le focus sur le bouton de fermeture (accessibilité)
     modalClose.focus();
 }
 
+/** Ferme la modal */
 function fermerModal() {
     modalOverlay.setAttribute("hidden", "");
 }
 
+// Fermer au clic sur la croix
 modalClose.addEventListener("click", fermerModal);
 
+// Fermer au clic sur l'overlay (en dehors de la box)
 modalOverlay.addEventListener("click", function (event) {
     if (event.target === modalOverlay) fermerModal();
 });
 
-// ===== BOUTON MODIFIER DANS LA MODAL =====
+// ===== MODAL DE MODIFICATION =====
+
+// Ouvrir le formulaire de modification depuis la modal de détail
 modalBtnEdit.addEventListener("click", function () {
     const id     = Number(modalBtnEdit.dataset.id);
     const joueur = data.find(j => j.id === id);
@@ -416,46 +435,53 @@ modalBtnEdit.addEventListener("click", function () {
     ouvrirFormEdit(joueur);
 });
 
-// ===== MODAL DE MODIFICATION =====
-
 /**
  * Pré-remplit le formulaire de modification avec les données du joueur.
  * @param {Object} joueur - L'objet joueur à modifier
  */
 function ouvrirFormEdit(joueur) {
-    editId.value            = joueur.id;
-    editName.value          = joueur.name;
-    editPoste.value         = joueur.poste;
-    editAnnees.value        = joueur.annees;
-    editTitres.value        = joueur.titres;
-    editRating.value        = joueur.rating;
-    editNationalite.value   = joueur.nationalite;
+    editId.value          = joueur.id;
+    editName.value        = joueur.name;
+    editPoste.value       = joueur.poste;
+    editAnnees.value      = joueur.annees;
+    editTitres.value      = joueur.titres;
+    editRating.value      = joueur.rating;
+    editNationalite.value = joueur.nationalite;
 
+    // Retirer l'attribut "hidden" pour afficher la modal
     editOverlay.removeAttribute("hidden");
+    // Mettre le focus sur le premier champ
     editName.focus();
 }
 
+/** Ferme la modal de modification */
 function fermerFormEdit() {
     editOverlay.setAttribute("hidden", "");
 }
 
+// Fermer au clic sur la croix ou le bouton Annuler
 editClose.addEventListener("click", fermerFormEdit);
 editCancel.addEventListener("click", fermerFormEdit);
 
+// Fermer au clic sur l'overlay (en dehors de la box)
 editOverlay.addEventListener("click", function (event) {
     if (event.target === editOverlay) fermerFormEdit();
 });
 
-// ===== SOUMISSION DU FORMULAIRE DE MODIFICATION =====
+// Soumission du formulaire de modification
 formEdit.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    // Validation des champs obligatoires
-    const nomValide    = validerChamp(editName,   "error-edit-name",   "Le nom est obligatoire.");
-    const posteValide  = validerChamp(editPoste,  "error-edit-poste",  "Choisis un poste.");
-    const anneesValide = validerChamp(editAnnees, "error-edit-annees", "Les années sont obligatoires.");
-    const titresValide = validerChamp(editTitres, "error-edit-titres", "Le nombre de titres est obligatoire.");
-    const ratingValide = validerChamp(editRating, "error-edit-rating", "La note doit être entre 1 et 10.");
+    const nomValide    = validerChamp(editName,   "error-edit-name",
+        "Le nom est obligatoire.");
+    const posteValide  = validerChamp(editPoste,  "error-edit-poste",
+        "Choisis un poste.");
+    const anneesValide = validerChamp(editAnnees, "error-edit-annees",
+        "Les années sont obligatoires.");
+    const titresValide = validerChamp(editTitres, "error-edit-titres",
+        "Le nombre de titres est obligatoire.");
+    const ratingValide = validerChamp(editRating, "error-edit-rating",
+        "La note doit être entre 1 et 10.");
 
     if (!nomValide || !posteValide || !anneesValide || !titresValide || !ratingValide) {
         return;
@@ -483,8 +509,9 @@ formEdit.addEventListener("submit", function (event) {
     fermerFormEdit();
     refresh();
 
+    // Petit message de confirmation (accessible)
     resultCount.textContent = `✅ ${editName.value.trim()} modifié avec succès !`;
-    setTimeout(refresh, 2500);
+    setTimeout(refresh, 2500); // Remet le compteur normal après 2.5s
 });
 
 // ===== FORMULAIRE D'AJOUT =====
@@ -499,16 +526,19 @@ formEdit.addEventListener("submit", function (event) {
 function validerChamp(input, errorId, message) {
     const errorEl = document.getElementById(errorId);
     if (!input.value.trim() || !input.checkValidity()) {
+        // Champ invalide : on ajoute la classe CSS et on affiche le message
         input.classList.add("invalid");
         errorEl.textContent = message;
         return false;
     }
+    // Champ valide : on supprime les indicateurs d'erreur
     input.classList.remove("invalid");
     errorEl.textContent = "";
     return true;
 }
 
 formAdd.addEventListener("submit", function (event) {
+    // event.preventDefault() empêche le rechargement de la page (comportement par défaut)
     event.preventDefault();
 
     const nomValide = validerChamp(
@@ -527,13 +557,15 @@ formAdd.addEventListener("submit", function (event) {
         inputRating, "error-rating", "La note doit être entre 1 et 10."
     );
 
+    // Si un seul champ est invalide, on arrête
     if (!nomValide || !posteValide || !anneesValide || !titresValide || !ratingValide) {
         return;
     }
 
+    // Créer le nouvel objet joueur
     const nomTrimmed = inputName.value.trim();
     const nouveauJoueur = {
-        id:          Date.now(),
+        id:          Date.now(), // ID unique basé sur le timestamp
         name:        nomTrimmed,
         poste:       inputPoste.value,
         annees:      inputAnnees.value.trim(),
@@ -548,20 +580,26 @@ formAdd.addEventListener("submit", function (event) {
             " a joué en tant que " + inputPoste.value + " au FC Barcelone."
     };
 
+    // Ajouter au tableau de données
     data.push(nouveauJoueur);
+
+    // Rafraîchir l'affichage et réinitialiser le formulaire
     refresh();
     formAdd.reset();
 
+    // Feedback utilisateur : scroll vers la liste
     document.getElementById("liste").scrollIntoView({ behavior: "smooth" });
 
+    // Petit message de confirmation (accessible)
     resultCount.textContent = `✅ ${nomTrimmed} ajouté avec succès !`;
-    setTimeout(refresh, 2500);
+    setTimeout(refresh, 2500); // Remet le compteur normal après 2.5s
 });
 
 // Effacer les erreurs quand l'utilisateur recommence à taper
 [inputName, inputPoste, inputAnnees, inputTitres, inputRating].forEach(input => {
     input.addEventListener("input", function () {
         this.classList.remove("invalid");
+        // Effacer le message d'erreur correspondant
         const cle     = this.id.replace("input-", "");
         const errorEl = document.getElementById("error-" + cle);
         if (errorEl) errorEl.textContent = "";
@@ -577,4 +615,5 @@ document.addEventListener("keydown", function (event) {
 });
 
 // ===== INITIALISATION =====
+// Appel initial pour afficher tous les joueurs au chargement de la page
 refresh();
