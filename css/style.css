@@ -196,7 +196,7 @@ body {
 }
 .card img {
   width: 100%;
-  height: 200px;
+  height: 240px;
   object-fit: cover;
   display: block;
 }
@@ -336,7 +336,7 @@ body {
   transition: background-color 0.15s;
 }
 .modal-close:hover { background: rgba(0,0,0,0.9); }
-.modal-img { width: 100%; height: 200px; object-fit: cover; }
+.modal-img { width: 100%; height: 260px; object-fit: cover; }
 .modal-content { padding: var(--space-lg); }
 .modal-poste {
   font-size: 0.75rem;

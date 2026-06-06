@@ -1,4 +1,10 @@
 "use strict";
+
+// ============================================================
+// script.js — Légendes du FC Barcelone
+// Module C122 — Steve Fallet
+// ============================================================
+
 // ===== DONNÉES =====
 // Tableau d'objets : chaque objet = une légende du Barça.
 // Chaque propriété correspond à une donnée affichée sur la carte ou dans la modal.
@@ -11,7 +17,8 @@ let data = [
         nationalite: "Argentin",
         titres: 35,
         rating: 10.0,
-        image: "https://placehold.co/400x300/a50044/white?text=Messi",
+        image: "img/messi.webp",
+        imgPosition: "top",
         description: "Le plus grand joueur de l'histoire du Barça. 672 buts en Liga, " +
             "8 Ballons d'Or. Formé à La Masia, symbole absolu du club."
     },
@@ -23,7 +30,8 @@ let data = [
         nationalite: "Néerlandais",
         titres: 3,
         rating: 9.8,
-        image: "https://placehold.co/400x300/004d98/white?text=Cruyff",
+        image: "img/cruyff.jpg",
+        imgPosition: "center",
         description: "Philosophe du football total. Cruyff a révolutionné le jeu au Camp Nou " +
             "et posé les bases de tout ce que le Barça est devenu."
     },
@@ -35,7 +43,8 @@ let data = [
         nationalite: "Espagnol",
         titres: 25,
         rating: 9.7,
-        image: "https://placehold.co/400x300/004d98/white?text=Xavi",
+        image: "img/xavi.jpg",
+        imgPosition: "top",
         description: "Le maestro du tiki-taka. 767 matches officiels, 4 Ligues des Champions. " +
             "Le joueur avec le plus de passes réussies de l'histoire."
     },
@@ -47,7 +56,8 @@ let data = [
         nationalite: "Espagnol",
         titres: 32,
         rating: 9.6,
-        image: "https://placehold.co/400x300/004d98/white?text=Iniesta",
+        image: "img/iniesta.webp",
+        imgPosition: "center",
         description: "L'homme aux moments décisifs. Auteur du but vainqueur en finale " +
             "de Coupe du monde 2010. Symbole de discrétion et d'élégance."
     },
@@ -59,7 +69,8 @@ let data = [
         nationalite: "Brésilien",
         titres: 9,
         rating: 9.5,
-        image: "https://placehold.co/400x300/ffed00/333?text=Ronaldinho",
+        image: "img/ronaldinho.jpg",
+        imgPosition: "top",
         description: "Le magicien brésilien. Ballon d'Or 2005, deux fois élu meilleur " +
             "joueur du monde. Dribbles improbables et joie de vivre incomparables."
     },
@@ -71,7 +82,8 @@ let data = [
         nationalite: "Espagnol",
         titres: 17,
         rating: 9.2,
-        image: "https://placehold.co/400x300/004d98/white?text=Guardiola",
+        image: "img/guardiola.jpg",
+        imgPosition: "top",
         description: "Capitaine du Dream Team de Johan Cruyff. Guardiola a tout compris " +
             "du football de position, avant de devenir l'entraîneur le plus titré du club."
     },
@@ -83,7 +95,8 @@ let data = [
         nationalite: "Espagnol",
         titres: 21,
         rating: 9.3,
-        image: "https://placehold.co/400x300/10b981/white?text=Puyol",
+        image: "img/puyol.webp",
+        imgPosition: "top",
         description: "Capitaine emblématique, guerrier du Camp Nou. Son leadership " +
             "et sa lecture du jeu en faisaient l'un des défenseurs les plus complets."
     },
@@ -95,7 +108,8 @@ let data = [
         nationalite: "Brésilien",
         titres: 14,
         rating: 9.0,
-        image: "https://placehold.co/400x300/a50044/white?text=Neymar+Jr",
+        image: "img/neymar.jpg",
+        imgPosition: "top",
         description: "Pièce centrale du trio MSN avec Messi et Suárez. " +
             "Vainqueur de la LDC 2015, vendu au PSG pour 222M€ en 2017."
     },
@@ -107,7 +121,8 @@ let data = [
         nationalite: "Espagnol",
         titres: 21,
         rating: 8.9,
-        image: "https://placehold.co/400x300/f59e0b/white?text=Valdes",
+        image: "img/valdes.webp",
+        imgPosition: "top",
         description: "Gardien de la génération dorée. 14 ans au Camp Nou, " +
             "six titres de Liga et trois Ligues des Champions."
     },
@@ -119,7 +134,8 @@ let data = [
         nationalite: "Brésilien",
         titres: 23,
         rating: 9.1,
-        image: "https://placehold.co/400x300/10b981/white?text=Dani+Alves",
+        image: "img/daniAlves.jpg",
+        imgPosition: "top",
         description: "Le latéral droit le plus titré de l'histoire (43 titres en carrière). " +
             "Sa complicité avec Messi sur le côté droit était incomparable."
     },
@@ -131,7 +147,8 @@ let data = [
         nationalite: "Uruguayen",
         titres: 13,
         rating: 9.4,
-        image: "https://placehold.co/400x300/004d98/white?text=Suarez",
+        image: "img/suarez.jpg",
+        imgPosition: "top",
         description: "Membre du légendaire trio MSN. 198 buts en 283 matchs, " +
             "meilleur buteur de Liga 2015–2016 avec 40 buts en une saison."
     },
@@ -143,13 +160,14 @@ let data = [
         nationalite: "Espagnol",
         titres: 30,
         rating: 9.2,
-        image: "https://placehold.co/400x300/10b981/white?text=Pique",
+        image: "img/pique.jpg",
+        imgPosition: "top",
         description: "L'un des défenseurs centraux les plus titrés de l'histoire. " +
             "8 titres de Liga, 3 Ligues des Champions, champion du monde 2010."
     }
 ];
 
-// ===== ÉLÉMENTS HTML =====
+// ===== ÉLÉMENTS DU DOM =====
 // On récupère les éléments HTML une seule fois et on les stocke dans des constantes.
 // C'est plus performant que d'appeler document.getElementById à chaque fois.
 const listEl           = document.getElementById("list");
@@ -244,7 +262,8 @@ function afficherJoueurs(tabJoueurs) {
         html += `
       <li>
         <article class="card ${classePoste}" data-id="${joueur.id}">
-          <img src="${joueur.image}" alt="Photo de ${joueur.name}" />
+          <img src="${joueur.image}" alt="Photo de ${joueur.name}" 
+          style="object-position: ${joueur.imgPosition};" />
           <div class="card-body">
             <span class="card-poste">${joueur.poste}</span>
             <h2>${joueur.name}</h2>
@@ -376,8 +395,9 @@ listEl.addEventListener("click", function (event) {
  * @param {Object} joueur - L'objet joueur à afficher
  */
 function ouvrirModal(joueur) {
-    document.getElementById("modal-img").src             = joueur.image;
-    document.getElementById("modal-img").alt             = `Photo de ${joueur.name}`;
+    document.getElementById("modal-img").src                      = joueur.image;
+    document.getElementById("modal-img").alt                      = `Photo de ${joueur.name}`;
+    document.getElementById("modal-img").style.objectPosition = joueur.imgPosition || "top";
     document.getElementById("modal-poste").textContent   = joueur.poste;
     document.getElementById("modal-name").textContent    = joueur.name;
     document.getElementById("modal-annees").textContent  = `📅 ${joueur.annees}`;
