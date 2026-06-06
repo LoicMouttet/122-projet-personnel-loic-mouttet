@@ -1,10 +1,4 @@
 "use strict";
-
-// ============================================================
-// script.js — Légendes du FC Barcelone
-// Module C122 — Steve Fallet
-// ============================================================
-
 // ===== DONNÉES =====
 // Tableau d'objets : chaque objet = une légende du Barça.
 // Chaque propriété correspond à une donnée affichée sur la carte ou dans la modal.
