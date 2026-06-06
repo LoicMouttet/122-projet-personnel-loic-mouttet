@@ -356,6 +356,9 @@ body {
 .stat-box small { font-size: 0.72rem; color: var(--texte-muted); text-transform: uppercase; }
 .modal-desc { color: var(--texte-muted); font-size: 0.88rem; line-height: 1.6; }
 
+/* ---- BOUTON MODIFIER (modal) ---- */
+.btn-modal-edit { margin-top: var(--space-md); width: 100%; }
+
 /* ---- FOOTER ---- */
 .site-footer {
   margin-top: 3rem;

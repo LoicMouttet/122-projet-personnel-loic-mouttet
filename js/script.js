@@ -162,8 +162,6 @@ let data = [
 ];
 
 // ===== ÉLÉMENTS DU DOM =====
-// On récupère les éléments HTML une seule fois et on les stocke dans des constantes.
-// C'est plus performant que d'appeler document.getElementById à chaque fois.
 const listEl           = document.getElementById("list");
 const searchInput      = document.getElementById("search");
 const filterPoste      = document.getElementById("filter-poste");
@@ -180,13 +178,24 @@ const inputNationalite = document.getElementById("input-nationalite");
 const inputImage       = document.getElementById("input-image");
 const modalOverlay     = document.getElementById("modal-overlay");
 const modalClose       = document.getElementById("modal-close");
+const modalBtnEdit     = document.getElementById("modal-btn-edit");
+const editOverlay      = document.getElementById("edit-overlay");
+const editClose        = document.getElementById("edit-close");
+const editCancel       = document.getElementById("edit-cancel");
+const formEdit         = document.getElementById("form-edit");
+const editId           = document.getElementById("edit-id");
+const editName         = document.getElementById("edit-name");
+const editPoste        = document.getElementById("edit-poste");
+const editAnnees       = document.getElementById("edit-annees");
+const editTitres       = document.getElementById("edit-titres");
+const editRating       = document.getElementById("edit-rating");
+const editNationalite  = document.getElementById("edit-nationalite");
 
 // ===== ÉTAT DU TRI =====
-// On mémorise le critère et la direction du tri courant.
-let sortCritere = "rating"; // "rating" ou "titres"
-let sortAsc     = false;    // false = DESC (plus haut en premier)
+let sortCritere = "rating";
+let sortAsc     = false;
 
-// ===== FONCTION PRINCIPALE : refresh() =====
+// ===== REFRESH =====
 /**
  * Relit la recherche, le filtre et le tri, puis réaffiche la liste.
  * Appelée à chaque interaction utilisateur.
@@ -207,8 +216,6 @@ function refresh() {
 
     // 3. Trier selon le critère et la direction
     result = [...result].sort((a, b) => {
-        // On compare a[sortCritere] vs b[sortCritere] (rating ou titres)
-        // sortAsc true = ASC (petit au grand), false = DESC (grand au petit)
         if (sortAsc) {
             return a[sortCritere] - b[sortCritere];
         }
@@ -234,29 +241,26 @@ function refresh() {
  * @param {Array} tabJoueurs - Tableau d'objets joueurs à afficher
  */
 function afficherJoueurs(tabJoueurs) {
-    // Si aucun résultat, on affiche un message
     if (tabJoueurs.length === 0) {
         listEl.innerHTML =
             "<li class=\"empty-msg\">Aucune légende ne correspond à ta recherche.</li>";
         return;
     }
 
-    // Construction du HTML pour chaque joueur
     let html = "";
     tabJoueurs.forEach(joueur => {
         // On génère une classe CSS basée sur le poste pour coloriser la carte
         const classePoste = "poste-" + joueur.poste.toLowerCase()
-            .normalize("NFD")                // Décompose les accents
-            .replace(/[\u0300-\u036f]/g, "") // Supprime les accents
-            .replace(/\s+/g, "-");           // Remplace les espaces par des tirets
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-");
 
-        // Pluriel "titre/titres" selon le nombre
         const plurielTitre = joueur.titres > 1 ? "s" : "";
 
         html += `
       <li>
         <article class="card ${classePoste}" data-id="${joueur.id}">
-          <img src="${joueur.image}" alt="Photo de ${joueur.name}" 
+          <img src="${joueur.image}" alt="Photo de ${joueur.name}"
           style="object-position: ${joueur.imgPosition};" />
           <div class="card-body">
             <span class="card-poste">${joueur.poste}</span>
@@ -283,24 +287,20 @@ function afficherJoueurs(tabJoueurs) {
     listEl.innerHTML = html;
 }
 
-// ===== ÉVÉNEMENTS DE TRI =====
+// ===== TRI =====
 
-// Tri par note
 btnSortRating.addEventListener("click", function () {
     if (sortCritere === "rating") {
         // Même critère → on inverse la direction
         sortAsc = !sortAsc;
     } else {
-        // Nouveau critère → on commence en DESC (plus haut d'abord)
         sortCritere = "rating";
         sortAsc     = false;
     }
-    // Mettre à jour les textes des boutons pour indiquer la direction
     mettreAJourBoutonsTri();
     refresh();
 });
 
-// Tri par nombre de titres
 btnSortTitres.addEventListener("click", function () {
     if (sortCritere === "titres") {
         sortAsc = !sortAsc;
@@ -336,42 +336,31 @@ function mettreAJourBoutonsTri() {
 }
 
 // ===== RECHERCHE EN TEMPS RÉEL =====
-// "input" se déclenche à chaque frappe,
-// contrairement à "change" qui attend la perte du focus.
 searchInput.addEventListener("input", refresh);
 
 // ===== FILTRE PAR POSTE =====
 filterPoste.addEventListener("change", refresh);
 
 // ===== SUPPRESSION PAR DÉLÉGATION =====
-// Au lieu de mettre un addEventListener sur chaque bouton (coûteux),
-// on écoute les clics sur le conteneur parent et on remonte avec closest().
 listEl.addEventListener("click", function (event) {
-    // event.target = l'élément exact cliqué
-    // .closest(".btn-delete") = remonte dans les ancêtres jusqu'à trouver .btn-delete
     const btnDelete = event.target.closest(".btn-delete");
-    if (!btnDelete) return; // Si ce n'est pas un bouton supprimer, on arrête
+    if (!btnDelete) return;
 
-    // On trouve la carte parente pour récupérer l'id
-    const card = btnDelete.closest(".card");
-    const id   = Number(card.dataset.id); // dataset.id = attribut data-id du HTML
-
-    // Confirmation avant suppression (feedback utilisateur)
-    const joueur = data.find(j => j.id === id);
+    const card      = btnDelete.closest(".card");
+    const id        = Number(card.dataset.id);
+    const joueur    = data.find(j => j.id === id);
     const nomJoueur = joueur ? joueur.name : "ce joueur";
+
     if (!confirm(`Supprimer ${nomJoueur} de la liste ?`)) return;
 
-    // On filtre le tableau pour exclure le joueur supprimé
     data = data.filter(j => j.id !== id);
     refresh();
 });
 
 // ===== CLIC SUR UNE CARTE → OUVRIR LA MODAL =====
 listEl.addEventListener("click", function (event) {
-    // On ignore les clics sur le bouton supprimer (déjà géré)
     if (event.target.closest(".btn-delete")) return;
 
-    // On cherche la carte la plus proche du clic
     const card = event.target.closest(".card");
     if (!card) return;
 
@@ -382,48 +371,120 @@ listEl.addEventListener("click", function (event) {
     ouvrirModal(joueur);
 });
 
-// ===== MODAL =====
+// ===== MODAL DE DÉTAIL =====
 
 /**
  * Remplit et affiche la modal avec les détails d'un joueur.
  * @param {Object} joueur - L'objet joueur à afficher
  */
 function ouvrirModal(joueur) {
-    document.getElementById("modal-img").src                      = joueur.image;
-    document.getElementById("modal-img").alt                      = `Photo de ${joueur.name}`;
+    document.getElementById("modal-img").src                   = joueur.image;
+    document.getElementById("modal-img").alt                   = `Photo de ${joueur.name}`;
     document.getElementById("modal-img").style.objectPosition = joueur.imgPosition || "top";
-    document.getElementById("modal-poste").textContent   = joueur.poste;
-    document.getElementById("modal-name").textContent    = joueur.name;
-    document.getElementById("modal-annees").textContent  = `📅 ${joueur.annees}`;
-    document.getElementById("modal-titres").textContent  = joueur.titres;
-    document.getElementById("modal-rating").textContent  = joueur.rating.toFixed(1) + " ★";
-    document.getElementById("modal-nat").textContent     = joueur.nationalite;
-    document.getElementById("modal-desc").textContent    = joueur.description;
+    document.getElementById("modal-poste").textContent         = joueur.poste;
+    document.getElementById("modal-name").textContent          = joueur.name;
+    document.getElementById("modal-annees").textContent        = `📅 ${joueur.annees}`;
+    document.getElementById("modal-titres").textContent        = joueur.titres;
+    document.getElementById("modal-rating").textContent        = joueur.rating.toFixed(1) + " ★";
+    document.getElementById("modal-nat").textContent           = joueur.nationalite;
+    document.getElementById("modal-desc").textContent          = joueur.description;
 
-    // Retirer l'attribut "hidden" pour afficher la modal
+    // Stocker l'id sur le bouton modifier pour pouvoir le récupérer au clic
+    modalBtnEdit.dataset.id = joueur.id;
+
     modalOverlay.removeAttribute("hidden");
-    // Mettre le focus sur le bouton de fermeture (accessibilité)
     modalClose.focus();
 }
 
-/** Ferme la modal */
 function fermerModal() {
     modalOverlay.setAttribute("hidden", "");
 }
 
-// Fermer au clic sur la croix
 modalClose.addEventListener("click", fermerModal);
 
-// Fermer au clic sur l'overlay (en dehors de la box)
 modalOverlay.addEventListener("click", function (event) {
     if (event.target === modalOverlay) fermerModal();
 });
 
-// Fermer avec la touche Échap
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !modalOverlay.hasAttribute("hidden")) {
-        fermerModal();
+// ===== BOUTON MODIFIER DANS LA MODAL =====
+modalBtnEdit.addEventListener("click", function () {
+    const id     = Number(modalBtnEdit.dataset.id);
+    const joueur = data.find(j => j.id === id);
+    if (!joueur) return;
+
+    fermerModal();
+    ouvrirFormEdit(joueur);
+});
+
+// ===== MODAL DE MODIFICATION =====
+
+/**
+ * Pré-remplit le formulaire de modification avec les données du joueur.
+ * @param {Object} joueur - L'objet joueur à modifier
+ */
+function ouvrirFormEdit(joueur) {
+    editId.value            = joueur.id;
+    editName.value          = joueur.name;
+    editPoste.value         = joueur.poste;
+    editAnnees.value        = joueur.annees;
+    editTitres.value        = joueur.titres;
+    editRating.value        = joueur.rating;
+    editNationalite.value   = joueur.nationalite;
+
+    editOverlay.removeAttribute("hidden");
+    editName.focus();
+}
+
+function fermerFormEdit() {
+    editOverlay.setAttribute("hidden", "");
+}
+
+editClose.addEventListener("click", fermerFormEdit);
+editCancel.addEventListener("click", fermerFormEdit);
+
+editOverlay.addEventListener("click", function (event) {
+    if (event.target === editOverlay) fermerFormEdit();
+});
+
+// ===== SOUMISSION DU FORMULAIRE DE MODIFICATION =====
+formEdit.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    // Validation des champs obligatoires
+    const nomValide    = validerChamp(editName,   "error-edit-name",   "Le nom est obligatoire.");
+    const posteValide  = validerChamp(editPoste,  "error-edit-poste",  "Choisis un poste.");
+    const anneesValide = validerChamp(editAnnees, "error-edit-annees", "Les années sont obligatoires.");
+    const titresValide = validerChamp(editTitres, "error-edit-titres", "Le nombre de titres est obligatoire.");
+    const ratingValide = validerChamp(editRating, "error-edit-rating", "La note doit être entre 1 et 10.");
+
+    if (!nomValide || !posteValide || !anneesValide || !titresValide || !ratingValide) {
+        return;
     }
+
+    const id = Number(editId.value);
+
+    // On trouve le joueur dans le tableau et on met à jour ses propriétés
+    data = data.map(function (joueur) {
+        if (joueur.id !== id) return joueur;
+        return {
+            id:          joueur.id,
+            name:        editName.value.trim(),
+            poste:       editPoste.value,
+            annees:      editAnnees.value.trim(),
+            nationalite: editNationalite.value.trim() || "Inconnu",
+            titres:      Number(editTitres.value),
+            rating:      parseFloat(editRating.value),
+            image:       joueur.image,
+            imgPosition: joueur.imgPosition,
+            description: joueur.description
+        };
+    });
+
+    fermerFormEdit();
+    refresh();
+
+    resultCount.textContent = `✅ ${editName.value.trim()} modifié avec succès !`;
+    setTimeout(refresh, 2500);
 });
 
 // ===== FORMULAIRE D'AJOUT =====
@@ -438,22 +499,18 @@ document.addEventListener("keydown", function (event) {
 function validerChamp(input, errorId, message) {
     const errorEl = document.getElementById(errorId);
     if (!input.value.trim() || !input.checkValidity()) {
-        // Champ invalide : on ajoute la classe CSS et on affiche le message
         input.classList.add("invalid");
         errorEl.textContent = message;
         return false;
     }
-    // Champ valide : on supprime les indicateurs d'erreur
     input.classList.remove("invalid");
     errorEl.textContent = "";
     return true;
 }
 
 formAdd.addEventListener("submit", function (event) {
-    // event.preventDefault() empêche le rechargement de la page (comportement par défaut)
     event.preventDefault();
 
-    // Validation de chaque champ obligatoire
     const nomValide = validerChamp(
         inputName, "error-name", "Le nom est obligatoire (min. 2 caractères)."
     );
@@ -470,15 +527,13 @@ formAdd.addEventListener("submit", function (event) {
         inputRating, "error-rating", "La note doit être entre 1 et 10."
     );
 
-    // Si un seul champ est invalide, on arrête
     if (!nomValide || !posteValide || !anneesValide || !titresValide || !ratingValide) {
         return;
     }
 
-    // Créer le nouvel objet joueur
     const nomTrimmed = inputName.value.trim();
     const nouveauJoueur = {
-        id:          Date.now(), // ID unique basé sur le timestamp
+        id:          Date.now(),
         name:        nomTrimmed,
         poste:       inputPoste.value,
         annees:      inputAnnees.value.trim(),
@@ -488,36 +543,38 @@ formAdd.addEventListener("submit", function (event) {
         image: inputImage.value.trim() ||
             "https://placehold.co/400x300/7f8c8d/white?text=" +
             encodeURIComponent(nomTrimmed),
+        imgPosition: "top",
         description: "Légende ajoutée manuellement. " + nomTrimmed +
             " a joué en tant que " + inputPoste.value + " au FC Barcelone."
     };
 
-    // Ajouter au tableau de données
     data.push(nouveauJoueur);
-
-    // Rafraîchir l'affichage et réinitialiser le formulaire
     refresh();
     formAdd.reset();
 
-    // Feedback utilisateur : scroll vers la liste
     document.getElementById("liste").scrollIntoView({ behavior: "smooth" });
 
-    // Petit message de confirmation (accessible)
     resultCount.textContent = `✅ ${nomTrimmed} ajouté avec succès !`;
-    setTimeout(refresh, 2500); // Remet le compteur normal après 2.5s
+    setTimeout(refresh, 2500);
 });
 
 // Effacer les erreurs quand l'utilisateur recommence à taper
 [inputName, inputPoste, inputAnnees, inputTitres, inputRating].forEach(input => {
     input.addEventListener("input", function () {
         this.classList.remove("invalid");
-        // Effacer le message d'erreur correspondant
         const cle     = this.id.replace("input-", "");
         const errorEl = document.getElementById("error-" + cle);
         if (errorEl) errorEl.textContent = "";
     });
 });
 
+// Fermer avec la touche Échap
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        if (!modalOverlay.hasAttribute("hidden")) fermerModal();
+        if (!editOverlay.hasAttribute("hidden"))  fermerFormEdit();
+    }
+});
+
 // ===== INITIALISATION =====
-// Appel initial pour afficher tous les joueurs au chargement de la page
 refresh();

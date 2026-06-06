@@ -186,6 +186,66 @@
                 <div class="stat-box"><span id="modal-nat"></span><small>Nationalité</small></div>
             </div>
             <p id="modal-desc" class="modal-desc"></p>
+            <button id="modal-btn-edit" class="btn btn-primary btn-modal-edit">✏️ Modifier</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div id="edit-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-title" hidden>
+    <div class="modal-box">
+        <button class="modal-close" id="edit-close" aria-label="Fermer">✕</button>
+        <div class="modal-content">
+            <h2 id="edit-title" class="form-heading">✏️ Modifier la légende</h2>
+            <form id="form-edit" novalidate>
+                <input type="hidden" id="edit-id" />
+
+                <div class="form-group">
+                    <label for="edit-name">Nom du joueur *</label>
+                    <input type="text" id="edit-name" required minlength="2" maxlength="60" />
+                    <span class="form-error" id="error-edit-name" aria-live="polite"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-poste">Poste *</label>
+                    <select id="edit-poste" required>
+                        <option value="">— Choisir un poste —</option>
+                        <option value="Gardien">Gardien</option>
+                        <option value="Défenseur">Défenseur</option>
+                        <option value="Milieu">Milieu</option>
+                        <option value="Attaquant">Attaquant</option>
+                    </select>
+                    <span class="form-error" id="error-edit-poste" aria-live="polite"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-annees">Années au Barça *</label>
+                    <input type="text" id="edit-annees" required />
+                    <span class="form-error" id="error-edit-annees" aria-live="polite"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-titres">Nombre de titres *</label>
+                    <input type="number" id="edit-titres" min="0" max="99" required />
+                    <span class="form-error" id="error-edit-titres" aria-live="polite"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-rating">Note (1–10) *</label>
+                    <input type="number" id="edit-rating" min="1" max="10" step="0.1" required />
+                    <span class="form-error" id="error-edit-rating" aria-live="polite"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-nationalite">Nationalité</label>
+                    <input type="text" id="edit-nationalite" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <button type="button" id="edit-cancel" class="btn btn-ghost">Annuler</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
